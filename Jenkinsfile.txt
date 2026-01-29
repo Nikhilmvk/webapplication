@@ -2,26 +2,28 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Nikhilmvk/webapp.git', branch: 'main'
+                checkout scm
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Terraform Init') {
             steps {
-                sh 'docker build -t webapplication:latest .'
+                dir('terraform') {
+                    sh 'terraform init'
+                }
             }
         }
 
-        stage('Run Web App') {
+        stage('Terraform Apply') {
             steps {
-                sh '''
-                docker stop webapplication || true
-                docker rm webapplication || true
-                docker run -d --name webappss -p 8070:80 webapplication:latest
-                '''
+                dir('terraform') {
+                    sh 'terraform apply -auto-approve'
+                }
             }
         }
     }
 }
+
